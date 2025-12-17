@@ -34,7 +34,7 @@ jobs:
       - name: Clone Repository (${{ github.event.inputs.git-ref }})
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          repository: 'komikku-app/komikku'
+          repository: 'rianza/komikku'
           fetch-depth: 0
           ref: ${{ github.event.inputs.git-ref }}
 
@@ -59,19 +59,36 @@ jobs:
       - name: Previous commit
         id: previous_commit
         run: |
-          commit_count_diff=$(git rev-list --count "${{ steps.last_release.outputs.tag_name }}"..HEAD)
+          # Hitung total commit saja (tanpa pakai tag lama)
+          commit_count_diff=$(git rev-list --count HEAD)
 
-          # Fake at least 1 commits (to avoid no changes)
-          if [ "${commit_count_diff}" -eq 0 ]; then
+          if [ "$commit_count_diff" -eq 0 ]; then
             commit_count_diff=1
           fi
 
-          echo "commit_count_diff=$commit_count_diff"
-          prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
+          prev_release_sha=$(git rev-parse --short HEAD~1)
+
           echo "PREV_RELEASE_SHA=$prev_release_sha"
           echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_OUTPUT
-          echo "PREV_TAG_NAME=${{ steps.last_release.outputs.tag_name }}"
-          echo "PREV_TAG_NAME=${{ steps.last_release.outputs.tag_name }}" >> $GITHUB_OUTPUT
+          echo "PREV_TAG_NAME=none"
+          echo "PREV_TAG_NAME=none" >> $GITHUB_OUTPUT
+
+#      - name: Previous commit
+#        id: previous_commit
+#        run: |
+#          commit_count_diff=$(git rev-list --count "${{ steps.last_release.outputs.tag_name }}"..HEAD)
+
+          # Fake at least 1 commits (to avoid no changes)
+#          if [ "${commit_count_diff}" -eq 0 ]; then
+#            commit_count_diff=1
+#          fi
+
+#          echo "commit_count_diff=$commit_count_diff"
+#          prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
+#          echo "PREV_RELEASE_SHA=$prev_release_sha"
+ #         echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_OUTPUT
+#          echo "PREV_TAG_NAME=${{ steps.last_release.outputs.tag_name }}"
+#          echo "PREV_TAG_NAME=${{ steps.last_release.outputs.tag_name }}" >> $GITHUB_OUTPUT
 
       - name: Prepare env
         id: prepare_env
@@ -92,7 +109,7 @@ jobs:
         run: |
           echo "COMMIT_LOGS<<{delimiter}
           $(curl -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/komikku-app/komikku/compare/${{ steps.previous_commit.outputs.PREV_RELEASE_SHA }}...${{ steps.current_commit.outputs.CURRENT_SHA }}" \
+            "https://api.github.com/repos/rianza/komikku/compare/${{ steps.previous_commit.outputs.PREV_RELEASE_SHA }}...${{ steps.current_commit.outputs.CURRENT_SHA }}" \
             | jq '[.commits[]|{message:(.commit.message | split("\n")), username:.author.login}]' \
             | jq -r '.[]|"- \(.message | first) (@\(.username))"')
           {delimiter}" >> $GITHUB_OUTPUT
@@ -104,7 +121,7 @@ jobs:
       - name: Clone Repository (${{ github.event.inputs.git-ref }} - ${{ needs.prepare-build.outputs.TAG_NAME }})
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          repository: 'komikku-app/komikku'
+          repository: 'rianza/komikku'
           fetch-depth: 0
           ref: ${{ github.event.inputs.git-ref }}
 
@@ -199,7 +216,7 @@ jobs:
           tag_name: ${{ needs.prepare-build.outputs.TAG_NAME }}
           name: Komikku ${{ needs.prepare-build.outputs.BUILD_TYPE_NAME }} ${{ needs.prepare-build.outputs.TAG_NAME }}
           body: |
-            [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku-preview/${{ needs.prepare-build.outputs.TAG_NAME }}/total?label=Downloaded&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku-preview/releases/${{ needs.prepare-build.outputs.TAG_NAME }})
+            [![GitHub downloads](https://img.shields.io/github/downloads/rianza/komikku-preview/${{ needs.prepare-build.outputs.TAG_NAME }}/total?label=Downloaded&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/rianza/komikku-preview/releases/${{ needs.prepare-build.outputs.TAG_NAME }})
 
             #### What's Changed
             ##### New
@@ -210,7 +227,7 @@ jobs:
 
             ${{ needs.prepare-build.outputs.COMMIT_LOGS }}
 
-            **Full Changelog**: [komikku-app/komikku@${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.TAG_NAME }}](https://github.com/komikku-app/komikku/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.TAG_NAME }})
+            **Full Changelog**: [rianza/komikku@${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.TAG_NAME }}](https://github.com/rianza/komikku/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.TAG_NAME }})
 
             ---
 
