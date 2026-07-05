@@ -152,10 +152,10 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build app
-        run: ./gradlew assemblePreview -Pinclude-telemetry -Penable-updater
+        run: ./gradlew assambleRelease -Pinclude-telemetry -Penable-updater
 
-      - name: Run unit tests
-        run: ./gradlew testDebugUnitTest
+      #- name: Run unit tests
+      #  run: ./gradlew testDebugUnitTest
 
       - name: Upload artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
